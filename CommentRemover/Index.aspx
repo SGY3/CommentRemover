@@ -14,7 +14,7 @@
         <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
         <asp:UpdatePanel ID="UpdatePanel1" runat="server">
             <Triggers>
-                <asp:AsyncPostBackTrigger ControlID="btnRemoveCommnet" EventName="OnClick" />
+                <asp:PostBackTrigger ControlID="btnRemoveComment" />
             </Triggers>
             <ContentTemplate>
                 <div class="container border shadow rounded-2 my-3 p-3">

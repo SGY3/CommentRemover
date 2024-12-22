@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -46,6 +47,8 @@ namespace CommentRemover
                 if (selection == "Text")
                 {
                     string outputData = HandleText();
+                    string filePath = CreateSingleFile(outputData);
+                    DownloadFile(Server.MapPath(filePath));
                 }
             }
             catch (Exception ex)
@@ -57,7 +60,7 @@ namespace CommentRemover
         {
             try
             {
-                string[] lines = txtText.Text.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                string[] lines = txtText.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
                 StringBuilder stringBuilder = new StringBuilder();
                 if (formatType == "SQL")
                 {
@@ -72,7 +75,7 @@ namespace CommentRemover
                         cnt++;
                     }
 
-                    for (int i = cnt; cnt < lines.Length; i++)
+                    for (int i = cnt; i < lines.Length; i++)
                     {
                         string line = lines[i].Trim();
 
@@ -133,21 +136,38 @@ namespace CommentRemover
 
             }
         }
-        private void CreateFile(string fileType)
+        private string CreateSingleFile(string fileContent)
         {
             try
             {
-                if (fileType == "Text")
-                {
-                    string userFileName = txtFileName.Text.Trim();
-                    string fileName = userFileName != "" ? userFileName : Guid.NewGuid().ToString();
+                string userFileName = txtFileName.Text.Trim();
+                string fileName = (userFileName != "" ? userFileName : Guid.NewGuid().ToString()) + ".txt";
 
+                string folderPath = "~/Temp/";
+                string serverPath = Server.MapPath(folderPath);
+
+                if (!Directory.Exists(serverPath))
+                    Directory.CreateDirectory(serverPath);
+
+                string finalFile = Path.Combine(serverPath, fileName);
+                try
+                {
+                    // Using 'StreamWriter' to create and write to the file
+                    using (StreamWriter writer = new StreamWriter(finalFile))
+                    {
+                        writer.WriteLine(fileContent);  // Write the content to the file
+                    }
+                    return Path.Combine(folderPath, fileName);
                 }
+                catch (Exception ex)
+                {
+                    return "";
+                }
+
             }
             catch (Exception ex)
             {
-
-                throw;
+                return "";
             }
         }
         private void DownloadFile(string filePath)
@@ -167,7 +187,6 @@ namespace CommentRemover
             catch (Exception ex)
             {
 
-                throw;
             }
         }
     }
