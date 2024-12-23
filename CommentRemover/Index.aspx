@@ -10,7 +10,7 @@
     <link href="~\lib\bootstrap\css\bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
-    <form id="form1" runat="server">
+    <form id="form1" runat="server" enctype="multipart/form-data">
         <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
         <asp:UpdatePanel ID="UpdatePanel1" runat="server">
             <Triggers>
@@ -22,10 +22,19 @@
                         <div class="col-md-2">
                             <asp:Label ID="lblSelectType" runat="server" Text="Select Type" CssClass="form-label"></asp:Label>
                         </div>
-                        <div class="col-md-10">
+                        <div class="col-md-4">
                             <asp:RadioButtonList ID="radType" runat="server" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="radType_SelectedIndexChanged">
                                 <asp:ListItem Selected="True">Text</asp:ListItem>
                                 <asp:ListItem>File</asp:ListItem>
+                            </asp:RadioButtonList>
+                        </div>
+                        <div class="col-md-2">
+                            <asp:Label ID="lblCommentType" runat="server" Text="Comment Type" CssClass="form-label"></asp:Label>
+                        </div>
+                        <div class="col-md-4">
+                            <asp:RadioButtonList ID="radCommentType" runat="server" RepeatDirection="Horizontal">
+                                <asp:ListItem Selected="True" Value="SQL">SQL Object</asp:ListItem>
+                                <asp:ListItem>Others</asp:ListItem>
                             </asp:RadioButtonList>
                         </div>
                     </div>

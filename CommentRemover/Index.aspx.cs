@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
@@ -46,9 +48,35 @@ namespace CommentRemover
                 string selection = radType.SelectedValue;
                 if (selection == "Text")
                 {
-                    string outputData = HandleText();
+                    string outputData = HandleText(txtText.Text);
                     string filePath = CreateSingleFile(outputData);
                     DownloadFile(Server.MapPath(filePath));
+                }
+                else if (selection == "File")
+                {
+                    List<string> files = HandleFile();
+                    int fileCount = files.Count;
+                    if (fileCount == 0)
+                        return;
+                    if (files.Count == 1)
+                        DownloadFile(files[0]);
+                    else
+                    {
+                        string zipLocation = "~/TempZip/";
+                        string zipName = "CommentRemoved_" + DateTime.Now.ToString("yyyyMMddhhmmss") + "/";
+                        string zipPath = Path.Combine(zipLocation, zipName);
+                        if (!Directory.Exists(zipPath))
+                            Directory.CreateDirectory(Server.MapPath(zipPath));
+                        foreach (string file in files)
+                        {
+                            File.Copy(Server.MapPath(file), Server.MapPath(Path.Combine(zipPath, Path.GetFileName(file))));
+                        }
+                        string fileName = "CommentRemoved_" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".zip";
+                        string finalZipPath = Path.Combine(zipLocation, fileName);
+                        ZipFile.CreateFromDirectory(Server.MapPath(zipPath), Server.MapPath(finalZipPath));
+                        DownloadFile(Server.MapPath(finalZipPath));
+                    }
+
                 }
             }
             catch (Exception ex)
@@ -56,15 +84,16 @@ namespace CommentRemover
 
             }
         }
-        private string HandleText(string formatType = "SQL")
+        private string HandleText(string textData)
         {
             try
             {
-                string[] lines = txtText.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+                string[] lines = textData.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
                 StringBuilder stringBuilder = new StringBuilder();
-                if (formatType == "SQL")
+
+                int cnt = 0;
+                if (radCommentType.SelectedValue == "SQL")
                 {
-                    int cnt = 0;
                     for (int i = 0; i < lines.Length; i++)
                     {
                         string line = lines[i].Trim();
@@ -74,34 +103,34 @@ namespace CommentRemover
                         }
                         cnt++;
                     }
+                }
+                for (int i = cnt; i < lines.Length; i++)
+                {
+                    string line = lines[i].Trim();
 
-                    for (int i = cnt; i < lines.Length; i++)
+                    if (line.Contains("/*")) //Multiline Comment
                     {
-                        string line = lines[i].Trim();
-
-                        if (line.Contains("/*")) //Multiline Comment
+                        string newLine = RemoveMultilineComment(line);
+                        if (newLine.Contains("--"))
                         {
-                            string newLine = RemoveMultilineComment(line);
-                            if (newLine.Contains("--"))
-                            {
-                                int startPostion = newLine.IndexOf("--");
-                                stringBuilder.Append(newLine.Remove(startPostion) + " ");
-                            }
-                            else
-                            {
-                                stringBuilder.Append(newLine + " ");
-                            }
-                        }
-                        else if (line.Contains("--"))
-                        {
-                            int startPostion = line.IndexOf("--");
-                            stringBuilder.Append(line.Remove(startPostion) + " ");
+                            int startPostion = newLine.IndexOf("--");
+                            stringBuilder.Append(newLine.Remove(startPostion) + " ");
                         }
                         else
                         {
-                            stringBuilder.Append(line + " ");
+                            stringBuilder.Append(newLine + " ");
                         }
                     }
+                    else if (line.Contains("--"))
+                    {
+                        int startPostion = line.IndexOf("--");
+                        stringBuilder.Append(line.Remove(startPostion) + " ");
+                    }
+                    else
+                    {
+                        stringBuilder.Append(line + " ");
+                    }
+
                 }
                 return stringBuilder.ToString();
             }
@@ -125,16 +154,30 @@ namespace CommentRemover
                 return line;
             }
         }
-        private void HandleFile()
+        private List<string> HandleFile()
         {
+            List<string> fileResult = new List<string>();
             try
             {
-                string selection = radType.SelectedValue;
+                string folderPath = "~/Temp/";
+                string serverPath = Server.MapPath(folderPath);
+
+                if (!Directory.Exists(serverPath))
+                    Directory.CreateDirectory(serverPath);
+
+                foreach (HttpPostedFile httpPostedFile in fuFile.PostedFiles)
+                {
+                    string fileName = httpPostedFile.FileName + "~~" + Guid.NewGuid().ToString() + ".txt";
+                    string finalFile = Path.Combine(serverPath, fileName);
+                    httpPostedFile.SaveAs(finalFile);
+                    fileResult.Add(CreateSingleFile(HandleText(File.ReadAllText(finalFile))));
+                }
             }
             catch (Exception ex)
             {
 
             }
+            return fileResult;
         }
         private string CreateSingleFile(string fileContent)
         {
