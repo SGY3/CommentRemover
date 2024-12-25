@@ -5,6 +5,16 @@
     {
       "library": "bootstrap@5.3.3",
       "destination": "lib/bootstrap/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "jquery@3.7.1",
+      "destination": "lib/jquery/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "toastr.js@2.1.4",
+      "destination": "lib/toastr.js/"
     }
   ]
 }

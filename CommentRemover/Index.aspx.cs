@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Web;
+using System.Web.Services.Description;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace CommentRemover
 {
@@ -37,7 +34,7 @@ namespace CommentRemover
             }
             catch (Exception ex)
             {
-
+                ShowToaster("error", ex.Message);
             }
         }
 
@@ -81,7 +78,7 @@ namespace CommentRemover
             }
             catch (Exception ex)
             {
-
+                ShowToaster("error", ex.Message);
             }
         }
         private string HandleText(string textData)
@@ -136,6 +133,7 @@ namespace CommentRemover
             }
             catch (Exception ex)
             {
+                ShowToaster("error", ex.Message);
                 return ex.Message;
             }
         }
@@ -175,7 +173,7 @@ namespace CommentRemover
             }
             catch (Exception ex)
             {
-
+                ShowToaster("error", ex.Message);
             }
             return fileResult;
         }
@@ -204,12 +202,14 @@ namespace CommentRemover
                 }
                 catch (Exception ex)
                 {
+                    ShowToaster("error", ex.Message);
                     return "";
                 }
 
             }
             catch (Exception ex)
             {
+                ShowToaster("error", ex.Message);
                 return "";
             }
         }
@@ -229,8 +229,13 @@ namespace CommentRemover
             }
             catch (Exception ex)
             {
-
+                ShowToaster("error", ex.Message);
             }
+        }
+        private void ShowToaster(string type, string message)
+        {
+            string script = $"ShowToast('success', '{message}');";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "ToastrNotification", script, true);
         }
     }
 }
