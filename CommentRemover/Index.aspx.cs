@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Web;
-using System.Web.Services.Description;
 using System.Web.UI;
 
 namespace CommentRemover
@@ -45,33 +44,43 @@ namespace CommentRemover
                 string selection = radType.SelectedValue;
                 if (selection == "Text")
                 {
-                    string outputData = HandleText(txtText.Text);
-                    string filePath = CreateSingleFile(outputData);
-                    DownloadFile(Server.MapPath(filePath));
+                    if (CheckTextData())
+                    {
+                        string outputData = HandleText(txtText.Text);
+                        if (!string.IsNullOrEmpty(outputData))
+                        {
+                            string filePath = CreateSingleFile(outputData);
+                            DownloadFile(Server.MapPath(filePath));
+                            ShowToaster("success", "Comment removed successfully");
+                        }
+                    }
                 }
                 else if (selection == "File")
                 {
-                    List<string> files = HandleFile();
-                    int fileCount = files.Count;
-                    if (fileCount == 0)
-                        return;
-                    if (files.Count == 1)
-                        DownloadFile(files[0]);
-                    else
+                    if (CheckFile())
                     {
-                        string zipLocation = "~/TempZip/";
-                        string zipName = "CommentRemoved_" + DateTime.Now.ToString("yyyyMMddhhmmss") + "/";
-                        string zipPath = Path.Combine(zipLocation, zipName);
-                        if (!Directory.Exists(zipPath))
-                            Directory.CreateDirectory(Server.MapPath(zipPath));
-                        foreach (string file in files)
+                        List<string> files = HandleFile();
+                        int fileCount = files.Count;
+                        if (fileCount == 0)
+                            return;
+                        if (files.Count == 1)
+                            DownloadFile(files[0]);
+                        else
                         {
-                            File.Copy(Server.MapPath(file), Server.MapPath(Path.Combine(zipPath, Path.GetFileName(file))));
+                            string zipLocation = "~/TempZip/";
+                            string zipName = "CommentRemoved_" + DateTime.Now.ToString("yyyyMMddhhmmss") + "/";
+                            string zipPath = Path.Combine(zipLocation, zipName);
+                            if (!Directory.Exists(zipPath))
+                                Directory.CreateDirectory(Server.MapPath(zipPath));
+                            foreach (string file in files)
+                            {
+                                File.Copy(Server.MapPath(file), Server.MapPath(Path.Combine(zipPath, Path.GetFileName(file))));
+                            }
+                            string fileName = "CommentRemoved_" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".zip";
+                            string finalZipPath = Path.Combine(zipLocation, fileName);
+                            ZipFile.CreateFromDirectory(Server.MapPath(zipPath), Server.MapPath(finalZipPath));
+                            DownloadFile(Server.MapPath(finalZipPath));
                         }
-                        string fileName = "CommentRemoved_" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".zip";
-                        string finalZipPath = Path.Combine(zipLocation, fileName);
-                        ZipFile.CreateFromDirectory(Server.MapPath(zipPath), Server.MapPath(finalZipPath));
-                        DownloadFile(Server.MapPath(finalZipPath));
                     }
 
                 }
@@ -80,6 +89,33 @@ namespace CommentRemover
             {
                 ShowToaster("error", ex.Message);
             }
+        }
+        private bool CheckTextData()
+        {
+            if (string.IsNullOrWhiteSpace(txtText.Text))
+            {
+                ShowToaster("info", "Enter/Paste your text");
+                return false;
+            }
+            return true;
+        }
+        private bool CheckFile()
+        {
+            if (!fuFile.HasFiles)
+            {
+                ShowToaster("info", "Select File first.");
+                return false;
+            }
+            foreach (HttpPostedFile httpPostedFile in fuFile.PostedFiles)
+            {
+                string fileExtension = Path.GetExtension(httpPostedFile.FileName);
+                if (fileExtension != ".txt" || fileExtension != ".sql")
+                {
+                    ShowToaster("info", "Supported files are .txt and .sql");
+                    return false;
+                }
+            }
+            return true;
         }
         private string HandleText(string textData)
         {
@@ -139,18 +175,13 @@ namespace CommentRemover
         }
         private string RemoveMultilineComment(string line)
         {
-            if (line.Contains("/*")) //Multiline Comment
+            while (line.Contains("/*"))
             {
                 int startPosotion = line.IndexOf("/*");
                 int lastPosition = line.IndexOf("*/") + 2;
-
-                string newLine = line.Remove(startPosotion, (lastPosition - startPosotion));
-                return RemoveMultilineComment(newLine);
+                line = line.Remove(startPosotion, (lastPosition - startPosotion));
             }
-            else
-            {
-                return line;
-            }
+            return line;
         }
         private List<string> HandleFile()
         {
@@ -223,8 +254,32 @@ namespace CommentRemover
                     Response.Clear();
                     Response.ContentType = "application/octet-stream";
                     Response.AddHeader("Content-Disposition", "attachment; filename=" + fi.Name);
-                    Response.WriteFile(filePath);
+                    Response.TransmitFile(filePath);
+                    Response.Flush();
+
+                    // Subscribe to the EndRequest event for cleanup after response is done
+                    //HttpContext.Current.ApplicationInstance.EndRequest += (s, e) => DeleteFileOrDirectory(filePath);
+                    DeleteFileOrDirectory(filePath);
                     Response.End();
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowToaster("error", ex.Message);
+            }
+        }
+        // Helper method to delete files or directories
+        private void DeleteFileOrDirectory(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+                else if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, true);
                 }
             }
             catch (Exception ex)
@@ -234,7 +289,7 @@ namespace CommentRemover
         }
         private void ShowToaster(string type, string message)
         {
-            string script = $"ShowToast('success', '{message}');";
+            string script = $"ShowToast(`{type}`, `{message}`);";
             ScriptManager.RegisterStartupScript(this, this.GetType(), "ToastrNotification", script, true);
         }
     }

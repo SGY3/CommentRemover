@@ -69,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="css\utility.css" />
     <Content Include="Index.aspx" />
     <Content Include="js\utility.js" />
     <Content Include="lib\bootstrap\css\bootstrap-grid.css" />

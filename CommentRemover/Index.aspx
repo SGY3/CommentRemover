@@ -7,8 +7,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Commnent Remover</title>
-    <link href="~\lib\bootstrap\css\bootstrap.min.css" rel="stylesheet" />
-    <link href="~\lib\toastr.js\toastr.min.css" rel="stylesheet" />
+    <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/lib/toastr.js/toastr.min.css" rel="stylesheet" />
+    <link href="/css/utility.css" rel="stylesheet" />
 </head>
 <body>
     <form id="form1" runat="server" enctype="multipart/form-data">
@@ -66,12 +67,13 @@
                         <asp:Button ID="btnRemoveComment" runat="server" Text="Remove Comments" CssClass="btn btn-success btn-sm" OnClick="btnRemoveComment_Click" />
                     </div>
                 </div>
+
+                <script src="/lib/jquery/jquery.min.js"></script>
+                <script src="/lib/bootstrap/js/bootstrap.min.js"></script>
+                <script src="/lib/toastr.js/toastr.min.js"></script>
+                <script src="/js/utility.js"></script>
             </ContentTemplate>
         </asp:UpdatePanel>
     </form>
-    <script src="~\lib\jquery\jquery.min.js"></script>
-    <script src="~\lib\bootstrap\js\bootstrap.min.js"></script>
-    <script src="~\lib\toastr.js\toastr.min.js"></script>
-    <script src="~\js\utility.js"></script>
 </body>
 </html>
