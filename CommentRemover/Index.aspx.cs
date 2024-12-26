@@ -292,5 +292,10 @@ namespace CommentRemover
             string script = $"ShowToast(`{type}`, `{message}`);";
             ScriptManager.RegisterStartupScript(this, this.GetType(), "ToastrNotification", script, true);
         }
+
+        protected void btnReset_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Index.aspx");
+        }
     }
 }

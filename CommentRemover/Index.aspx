@@ -20,12 +20,13 @@
             </Triggers>
             <ContentTemplate>
                 <div class="container border shadow rounded-2 my-3 p-3">
-                    <div class="row mb-2">
+                    <h1 class="text-center text-primary">Comment Remover</h1>
+                    <div class="row mb-2 d-flex align-items-center">
                         <div class="col-md-2">
                             <asp:Label ID="lblSelectType" runat="server" Text="Select Type" CssClass="form-label"></asp:Label>
                         </div>
                         <div class="col-md-4">
-                            <asp:RadioButtonList ID="radType" runat="server" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="radType_SelectedIndexChanged">
+                            <asp:RadioButtonList ID="radType" runat="server" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="radType_SelectedIndexChanged" CellSpacing="10" CellPadding="10" CssClass="d-flex align-items-center">
                                 <asp:ListItem Selected="True">Text</asp:ListItem>
                                 <asp:ListItem>File</asp:ListItem>
                             </asp:RadioButtonList>
@@ -34,7 +35,7 @@
                             <asp:Label ID="lblCommentType" runat="server" Text="Comment Type" CssClass="form-label"></asp:Label>
                         </div>
                         <div class="col-md-4">
-                            <asp:RadioButtonList ID="radCommentType" runat="server" RepeatDirection="Horizontal">
+                            <asp:RadioButtonList ID="radCommentType" runat="server" RepeatDirection="Horizontal" CellSpacing="10" CellPadding="10">
                                 <asp:ListItem Selected="True" Value="SQL">SQL Object</asp:ListItem>
                                 <asp:ListItem>Others</asp:ListItem>
                             </asp:RadioButtonList>
@@ -65,6 +66,8 @@
                     </div>
                     <div class="d-flex justify-content-center align-items-center">
                         <asp:Button ID="btnRemoveComment" runat="server" Text="Remove Comments" CssClass="btn btn-success btn-sm" OnClick="btnRemoveComment_Click" />
+                        <span class="mx-2"></span>
+                        <asp:Button ID="btnReset" runat="server" Text="Reset" OnClick="btnReset_Click" CssClass="btn btn-danger btn-sm" />
                     </div>
                 </div>
 
